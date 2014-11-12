@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="utf-8">
+<title>MWO ReCalc</title>
+<meta name="application-name" content="MWO ReCalc: 電子レンジ加熱時間再計算">
+<meta name="keywords" content="MWO ReCalc,電子レンジ加熱時間再計算,電子レンジ,レンジ,時間変換,加熱時間,時間,W変換,ワット変換,変換,W,ワット,再計算,計算">
+<meta name="description" content="MWO ReCalc: 電子レンジ加熱時間再計算">
+<meta name="author" content="TaMaMhyu">
+
+<link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/ripples.min.css" rel="stylesheet">
+<link href="css/material-wfont.min.css" rel="stylesheet">
+<link href="css/jquery.bootstrap-touchspin.min.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-warning">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-warning-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="./index.html">MWO ReCalc</a>
+    </div>
+</div>
+
+<div class="row">
+
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="mdi-content-archive"></i> 表記</div>
+            <div class="panel-body">
+
+                <form id="src" class="form-horizontal" action="#">
+                <fieldset>
+
+                <div class="form-group">
+                    <label class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-image-flash-on"></i> 出力[W]</label>
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="srcw" id="srcw1" value="500" checked="">
+                                500W
+                            </label>
+                        </div>
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="srcw" id="srcw2" value="750">
+                                750W
+                            </label>
+                        </div>
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="srcw" id="srcw3" value="1500">
+                                1500W
+                            </label>
+                        </div>
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="srcw" id="srcw0" value="0">
+                                任意
+                            </label>
+                        </div>
+                        <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                            <input type="text" class="form-control" name="srcwopt" id="srcwopt" placeholder="出力[W]" disabled="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="srcsec" class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-action-alarm-on"></i> 時間</label>
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+                        <input type="text" class="form-control" name="srcmin" id="srcmin" placeholder="分">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12"></div>
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+                        <input type="text" class="form-control" name="srcsec" id="srcsec" placeholder="秒">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-lg-10 col-lg-offset-2 col-md-10 col-md-offset-2 col-sm-12 col-xs-12">
+                        <button type="submit" class="btn btn-primary"><i class="mdi-action-alarm-on"></i> 再計算</button>
+                    </div>
+                </div>
+
+                </fieldset>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading"><i class="mdi-content-send"></i> 使用</div>
+            <div class="panel-body">
+
+                <form id="dst" class="form-horizontal" action="#">
+                <fieldset>
+
+                <div class="form-group">
+                    <label class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-image-flash-on"></i> 出力[W]</label>
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="dstw" id="dstw1" value="500">
+                                500W
+                            </label>
+                        </div>
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="dstw" id="dstw2" value="750" checked="">
+                                750W
+                            </label>
+                        </div>
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="dstw" id="dstw3" value="1500">
+                                1500W
+                            </label>
+                        </div>
+                        <div class="radio radio-primary col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                            <label>
+                                <input type="radio" name="dstw" id="dstw0" value="0">
+                                任意
+                            </label>
+                        </div>
+                        <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                            <input type="text" class="form-control" name="dstwopt" id="dstwopt" placeholder="出力[W]" disabled="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-lg-10 col-lg-offset-2 col-md-10 col-md-offset-2 col-sm-12 col-xs-12">
+                        <button type="submit" class="btn btn-primary" id="recalc2"><i class="mdi-action-alarm-on"></i>  再計算</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dstminsec" class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-action-alarm-on"></i> 時間[分:秒]</label>
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+                        <input type="text" class="form-control" name="dstminsec" id="dstminsec" placeholder="分:秒" readonly="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dstsecfull" class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-action-alarm-on"></i> 時間[累計秒]</label>
+                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
+                        <input type="text" class="form-control" name="dstsecfull" id="dstsecfull" placeholder="累計秒" readonly="">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal" id="result-dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header alert-success">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">結果</h4>
+            </div>
+            <div class="modal-body" id="result-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="alert alert-warning text-right">
+    <p><small>Powered by 
+        &quot;<a href="http://fezvrasta.github.io/bootstrap-material-design/">Material Design for Bootstrap</a>&quot;, 
+        &quot;<a href="http://www.virtuosoft.eu/code/bootstrap-touchspin/">Bootstrap TouchSpin</a>&quot;, 
+        &quot;<a href="http://nparashuram.com/jquery-indexeddb/">JQuery IndexedDB Plugin</a>&quot;, 
+        &quot;<a href="http://jquery.com/">jQuery</a>&quot;, 
+        &quot;<a href="http://numeraljs.com/">Numeral.js</a>&quot;
+    </small></p>
+    <p><small>Copyright&copy; 2014- TaMaMhyu</small></p>
+</footer>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/numeral.js/1.5.3/numeral.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="js/jquery.indexeddb.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="js/ripples.min.js"></script>
+<script src="js/material.min.js"></script>
+<script src="js/jquery.bootstrap-touchspin.min.js"></script>
+<script>
+
+$(function() {
+
+$.indexedDB("mworecalc", {
+    "version": 1,
+    "schema": {
+        "1": function(transaction) {
+            console.log('MWO ReCalc: schema(1) transaction');
+            transaction.createObjectStore("settings");
+        }
+    }
+});
+var settings = $.indexedDB("mworecalc").objectStore("settings");
+
+$('input[name="srcmin"]').TouchSpin({
+    min: 0,
+    max: 60,
+    step: 1,
+    decimals: 0,
+    boostat: 5,
+    postfix: '分'
+});
+$('input[name="srcsec"]').TouchSpin({
+    min: 0,
+    max: 3600,
+    step: 1,
+    decimals: 0,
+    boostat: 10,
+    postfix: '秒'
+});
+
+$('input[name="srcwopt"]').TouchSpin({
+    min: 1,
+    max: 10000,
+    step: 1,
+    decimals: 0,
+    boostat: 50,
+    postfix: 'W'
+});
+$('input[name="dstwopt"]').TouchSpin({
+    min: 1,
+    max: 10000,
+    step: 1,
+    decimals: 0,
+    boostat: 50,
+    postfix: 'W'
+});
+
+$('input[name="srcw"]:radio').change(function() {
+    var disabled = ($(this).val() != '0');
+    $('input[name="srcwopt"]').prop('disabled', disabled);
+    if (! disabled) $('input[name="srcwopt"]').focus();
+    else $('input[name="srcmin"]').focus();
+});
+$('input[name="dstw"]:radio').change(function() {
+    var disabled = ($(this).val() != '0');
+    $('input[name="dstwopt"]').prop('disabled', disabled);
+    if (! disabled) $('input[name="dstwopt"]').focus();
+    else $('#recalc2').focus();
+});
+
+$.material.init();
+
+$('input[name="srcmin"]').focus();
+
+settings.get('srcw')
+    .done(function(result, event) {
+        if (result !== undefined) $('input[name="srcw"]:radio').val([result]);
+        console.log('MWO ReCalc: get srcw (' + result + ')');
+    })
+    .fail(function(error, event) {
+        console.log('MWO ReCalc: get srcw fail (' + error + ')');
+    });
+settings.get('srcwopt')
+    .done(function(result, event) {
+        if (result !== undefined) $('input[name="srcwopt"]').val(result);
+        console.log('MWO ReCalc: get srcwopt (' + result + ')');
+    })
+    .fail(function(error, event) {
+        console.log('MWO ReCalc: get srcwopt fail (' + error + ')');
+    });
+settings.get('dstw')
+    .done(function(result, event) {
+        if (result !== undefined) $('input[name="dstw"]:radio').val([result]);
+        console.log('MWO ReCalc: get dstw (' + result + ')');
+    })
+    .fail(function(error, event) {
+        console.log('MWO ReCalc: get dstw fail (' + error + ')');
+    });
+settings.get('dstwopt')
+    .done(function(result, event) {
+        if (result !== undefined) $('input[name="dstwopt"]').val(result);
+        console.log('MWO ReCalc: get dstwopt (' + result + ')');
+    })
+    .fail(function(error, event) {
+        console.log('MWO ReCalc: get dstwopt fail (' + error + ')');
+    });
+
+var show_result = function(text) {
+    $('#result-body').empty();
+    $('#result-body').append($('<p>')
+        .text(text)
+    );
+    $('#result-dialog').modal('show');
+};
+
+$('form').submit(function() {
+    var srcw = $('input[name="srcw"]:checked').val();
+    if (srcw == '0') srcw = $('input[name="srcwopt"]').val();
+    var dstw_raw = $('input[name="dstw"]:checked').val();
+    if (dstw_raw == '0') dstw_raw = $('input[name="dstwopt"]').val();
+    var min = $('input[name="srcmin"]').val();
+    var sec = $('input[name="srcsec"]').val();
+    srcw = parseInt(srcw);
+    var dstw = (dstw_raw != '' ? parseInt(dstw_raw) : 0);
+    min = (min != '' ? parseFloat(min) : 0);
+    sec = (sec != '' ? parseFloat(sec) : 0);
+    var secfull = min * 60 + sec;
+    if (dstw == 0) {
+        show_result('使用出力 "' + dstw + '" は不正です。');
+        return false;
+    }
+
+    var ratio = srcw / dstw;
+    var result = {
+        'secfull': 0,
+        'sec': 0,
+        'min': 0,
+        'minsec': '0:00',
+    };
+    result.secfull = secfull * ratio;
+    result.sec = result.secfull % 60;
+    result.min = Math.floor(result.secfull / 60);
+    var secfmt = numeral(result.sec).format('0[.]000');
+    var secpt = secfmt.indexOf('.');
+    if (secpt == 1 || secpt < 0 && secfmt.length == 1) secfmt = '0' + secfmt;
+    result.minsec = result.min + ':' + secfmt;
+    result.secfull = numeral(result.secfull).format('0[.]000');
+    if (result.secfull == 0) result.secfull = '';
+    if (result.sec == 0) result.sec = '';
+    if (result.min == 0) result.min = '';
+
+    $('input[name="dstsecfull"]').val(result.secfull);
+    $('input[name="dstsec"]').val(result.sec);
+    $('input[name="dstminsec"]').val(result.minsec).focus();
+
+    settings.put($('input[name="srcw"]:checked').val(), 'srcw')
+        .fail(function(error, event) {
+            console.log('MWO ReCalc: srcw stored fail (' + error + ')');
+            settings.add($('input[name="srcw"]:checked').val(), 'srcw')
+                .done(function(result, event) {
+                    console.log('MWO ReCalc: srcw stored [new] (' + result + ')');
+                })
+                .fail(function(error, event) {
+                    console.log('MWO ReCalc: srcw stored fail [new] (' + error + ')');
+                });
+        })
+        .done(function(result, event) {
+            console.log('MWO ReCalc: srcw stored (' + result + ')');
+        });
+    settings.put($('input[name="srcwopt"]').val(), 'srcwopt')
+        .fail(function(error, event) {
+            console.log('MWO ReCalc: srcwopt stored fail (' + error + ')');
+            settings.add($('input[name="srcwopt"]').val(), 'srcwopt')
+                .done(function(result, event) {
+                    console.log('MWO ReCalc: srcwopt stored [new] (' + result + ')');
+                })
+                .fail(function(error, event) {
+                    console.log('MWO ReCalc: srcwopt stored fail [new] (' + error + ')');
+                });
+        })
+        .done(function(result, event) {
+            console.log('MWO ReCalc: srcwopt stored (' + result + ')');
+        });
+    settings.put($('input[name="dstw"]:checked').val(), 'dstw')
+        .fail(function(error, event) {
+            console.log('MWO ReCalc: dstw stored fail (' + error + ')');
+            settings.add($('input[name="dstw"]:checked').val(), 'dstw')
+                .done(function(result, event) {
+                    console.log('MWO ReCalc: dstw stored [new] (' + result + ')');
+                })
+                .fail(function(error, event) {
+                    console.log('MWO ReCalc: dstw stored fail [new] (' + error + ')');
+                });
+        })
+        .done(function(result, event) {
+            console.log('MWO ReCalc: dstw stored (' + result + ')');
+        });
+    settings.put($('input[name="dstwopt"]').val(), 'dstwopt')
+        .fail(function(error, event) {
+            console.log('MWO ReCalc: dstwopt stored fail (' + error + ')');
+            settings.add($('input[name="dstwopt"]').val(), 'dstwopt')
+                .done(function(result, event) {
+                    console.log('MWO ReCalc: dstwopt stored [new] (' + result + ')');
+                })
+                .fail(function(error, event) {
+                    console.log('MWO ReCalc: dstwopt stored fail [new] (' + error + ')');
+                });
+        })
+        .done(function(result, event) {
+            console.log('MWO ReCalc: dstwopt stored (' + result + ')');
+        });
+
+    return false;
+});
+
+});
+
+</script>
+
+</body>
+
+</html>
