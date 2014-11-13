@@ -190,6 +190,7 @@
         &quot;<a href="http://jquery.com/">jQuery</a>&quot;, 
         &quot;<a href="http://numeraljs.com/">Numeral.js</a>&quot;
     </small></p>
+    <p><small>Hosted by &quot;<a id="hosted-by" href="https://pages.github.com/">GitHub Pages</a>&quot;</small></p>
     <p><small>Copyright&copy; 2014- TaMaMhyu</small></p>
 </footer>
 
@@ -203,6 +204,17 @@
 <script>
 
 $(function() {
+
+if (location.hostname === 'web.tmhyu.org') {
+}
+else if (location.hostname === 'tmhyu.org') {
+    $('#hosted-by').prop('href', 'http://www.xrea.com/');
+    $('#hosted-by').text('XREA.COM');
+}
+else {
+    $('#hosted-by').prop('href', '#');
+    $('#hosted-by').text('(unknown)');
+}
 
 $.indexedDB("mworecalc", {
     "version": 1,
