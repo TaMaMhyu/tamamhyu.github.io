@@ -14,6 +14,7 @@
 <link href="css/ripples.min.css" rel="stylesheet">
 <link href="css/material-wfont.min.css" rel="stylesheet">
 <link href="css/jquery.bootstrap-touchspin.min.css" rel="stylesheet">
+<link href="css/drum.min.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 </head>
@@ -75,15 +76,34 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="srcsec" class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-action-alarm-on"></i> 時間</label>
-                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
-                        <input type="text" class="form-control" name="srcmin" id="srcmin" placeholder="分">
+                    <label for="srctimeminsec" class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-action-alarm-on"></i> 時間[分:秒]</label>
+                    <div class="radio radio-primary col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                        <label>
+                            <input type="radio" name="srctime" id="srctimeminsec" value="minsec" checked="">
+                        </label>
+                    </div>
+                    <div id="srcminseccp" class="col-lg-8 col-md-8 col-sm-10 col-xs-10">
+                        <select class="drum timenext timemin" id="srctimemin" name="srctimemin"></select>
+                        <select class="drum timesec" id="srctimesec" name="srctimesec"></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="srcmin" class="col-lg-2 col-md-2 col-sm-12 col-xs-12"><i class="mdi-action-alarm-on"></i> 時間</label>
+                    <div class="radio radio-primary col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                        <label>
+                            <input type="radio" name="srctime" id="srctimeminplussec" value="minplussec">
+                        </label>
+                    </div>
+                    <div class="col-lg-8 col-md-8 col-sm-10 col-xs-10">
+                        <input type="text" class="form-control" name="srcmin" id="srcmin" placeholder="分" disabled="">
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12"></div>
-                    <div class="col-lg-10 col-md-10 col-sm-12 col-xs-12">
-                        <input type="text" class="form-control" name="srcsec" id="srcsec" placeholder="秒">
+                    <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2"></div>
+                    <div class="col-lg-8 col-md-8 col-sm-10 col-xs-10">
+                        <input type="text" class="form-control" name="srcsec" id="srcsec" placeholder="秒" disabled="">
                     </div>
                 </div>
 
@@ -186,6 +206,7 @@
     <p><small>Powered by 
         &quot;<a href="http://fezvrasta.github.io/bootstrap-material-design/">Material Design for Bootstrap</a>&quot;, 
         &quot;<a href="http://www.virtuosoft.eu/code/bootstrap-touchspin/">Bootstrap TouchSpin</a>&quot;, 
+        &quot;<a href="https://github.com/3epnm/drumjs">DrumJS</a>&quot;, 
         &quot;<a href="http://nparashuram.com/jquery-indexeddb/">JQuery IndexedDB Plugin</a>&quot;, 
         &quot;<a href="http://jquery.com/">jQuery</a>&quot;, 
         &quot;<a href="http://numeraljs.com/">Numeral.js</a>&quot;
@@ -201,9 +222,14 @@
 <script src="js/ripples.min.js"></script>
 <script src="js/material.min.js"></script>
 <script src="js/jquery.bootstrap-touchspin.min.js"></script>
+<script src="js/hammer.min.js"></script>
+<script src="js/hammer.fakemultitouch.js"></script>
+<script src="js/drum.min.js"></script>
 <script>
 
 $(function() {
+
+Hammer.plugins.fakeMultitouch();
 
 if (location.hostname === 'web.tmhyu.org') {
 }
@@ -261,11 +287,60 @@ $('input[name="dstwopt"]').TouchSpin({
     postfix: 'W'
 });
 
+for (var i = 0; i < 100; ++ i) {
+    var timestr = ('00' + i).slice(-2);
+    var optionelm = $('<option>')
+        .val(i)
+        .text(timestr)
+    ;
+    $('.timemin').append(optionelm.clone());
+    if (i < 60) $('.timesec').append(optionelm.clone());
+}
+$('#srctimemin').drum();
+var before_sec = 0;
+$('#srctimesec').drum({
+    onChange: function(e) {
+        var srctimemin_value = parseInt($('#srctimemin').val());
+        var value = parseInt($('#srctimesec').val());
+        if (value == 0 && before_sec >= 30 && srctimemin_value < 99)
+            $('#srctimemin').drum('setIndex', srctimemin_value + 1);
+        if (value == 59 && before_sec < 30 && srctimemin_value > 0)
+            $('#srctimemin').drum('setIndex', srctimemin_value - 1);
+        before_sec = value;
+    },
+});
+var drum_height = $('.drum-wrapper:first').css('height');
+$('.drum').next().addClass('pull-left');
+$('.timenext').next().after($('<div>')
+    .css({
+        'height': drum_height,
+        'margin-left': '0',
+        'margin-right': '0.25em',
+        'padding-left': '0',
+        'padding-right': '0.25em',
+    })
+    .addClass('pull-left')
+    .append($('<div>')
+        .css({
+            'position': 'relative',
+            'top': '50%',
+            '-webkit-transform': 'translateY(-50%)',
+            '-ms-transform': 'translateY(-50%)',
+            'transform': 'translateY(-50%)',
+        })
+        .text(':')
+    )
+);
+
 $('input[name="srcw"]:radio').change(function() {
     var disabled = ($(this).val() != '0');
+    var srcminsecenabled = ($('input[name="srctime"]:checked').val() == 'minsec');
     $('input[name="srcwopt"]').prop('disabled', disabled);
     if (! disabled) $('input[name="srcwopt"]').focus();
-    else $('input[name="srcmin"]').focus();
+    else {
+        if (srcminsecenabled) $('#srctimemin').focus();
+        else $('input[name="srcmin"]').focus();
+    }
 });
 $('input[name="dstw"]:radio').change(function() {
     var disabled = ($(this).val() != '0');
@@ -274,9 +349,21 @@ $('input[name="dstw"]:radio').change(function() {
     else $('#recalc2').focus();
 });
 
+$('input[name="srctime"]:radio').change(function() {
+    var srcminsecenabled = ($(this).val() == 'minsec');
+    $('select[name="srctimemin"]').prop('disabled', ! srcminsecenabled);
+    $('#srctimemin').drum({ interactive: srcminsecenabled });
+    $('select[name="srctimesec"]').prop('disabled', ! srcminsecenabled);
+    $('#srctimesec').drum({ interactive: srcminsecenabled });
+    $('input[name="srcmin"]').prop('disabled', srcminsecenabled);
+    $('input[name="srcsec"]').prop('disabled', srcminsecenabled);
+    if (srcminsecenabled) $('#srctimemin').focus();
+    else $('input[name="srcmin"]').focus();
+});
+
 $.material.init();
 
-$('input[name="srcmin"]').focus();
+$('#srctimemin').focus();
 
 settings.get('srcw')
     .done(function(result, event) {
@@ -324,13 +411,21 @@ $('form').submit(function() {
     if (srcw == '0') srcw = $('input[name="srcwopt"]').val();
     var dstw_raw = $('input[name="dstw"]:checked').val();
     if (dstw_raw == '0') dstw_raw = $('input[name="dstwopt"]').val();
-    var min = $('input[name="srcmin"]').val();
-    var sec = $('input[name="srcsec"]').val();
     srcw = parseInt(srcw);
     var dstw = (dstw_raw != '' ? parseInt(dstw_raw) : 0);
-    min = (min != '' ? parseFloat(min) : 0);
-    sec = (sec != '' ? parseFloat(sec) : 0);
-    var secfull = min * 60 + sec;
+    var secfull = 0;
+    if ($('input[name="srctime"]:checked').val() == 'minsec') {
+        var min = parseInt($('select[name="srctimemin"]').val(), 10);
+        var sec = parseInt($('select[name="srctimesec"]').val(), 10);
+        secfull = min * 60 + sec;
+    }
+    else {
+        var min = $('input[name="srcmin"]').val();
+        var sec = $('input[name="srcsec"]').val();
+        min = (min != '' ? parseFloat(min) : 0);
+        sec = (sec != '' ? parseFloat(sec) : 0);
+        secfull = min * 60 + sec;
+    }
     if (dstw == 0) {
         show_result('使用出力 "' + dstw + '" は不正です。');
         return false;
