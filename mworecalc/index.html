@@ -15,6 +15,8 @@
 <link href="css/material-wfont.min.css" rel="stylesheet">
 <link href="css/jquery.bootstrap-touchspin.min.css" rel="stylesheet">
 <link href="css/drum.min.css" rel="stylesheet">
+<link href="css/handsontable.full.min.css" rel="stylesheet">
+<link href="css/handsontable.bootstrap.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 </head>
@@ -29,6 +31,11 @@
             <span class="icon-bar"></span>
         </button>
         <a class="navbar-brand" href="./index.html">MWO ReCalc</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-warning-collapse">
+        <ul class="nav navbar-nav">
+            <li><a id="history" href="javascript:void(0);">再計算履歴</a></li>
+        </ul>
     </div>
 </div>
 
@@ -202,11 +209,28 @@
     </div>
 </div>
 
+<div class="modal" id="history-dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header alert-info">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">再計算履歴</h4>
+            </div>
+            <div class="modal-body" id="history-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer class="alert alert-warning text-right">
     <p><small>Powered by 
         &quot;<a href="http://fezvrasta.github.io/bootstrap-material-design/">Material Design for Bootstrap</a>&quot;, 
         &quot;<a href="http://www.virtuosoft.eu/code/bootstrap-touchspin/">Bootstrap TouchSpin</a>&quot;, 
         &quot;<a href="https://github.com/3epnm/drumjs">DrumJS</a>&quot;, 
+        &quot;<a href="http://handsontable.com/">Handsontable</a>&quot;, 
         &quot;<a href="http://nparashuram.com/jquery-indexeddb/">JQuery IndexedDB Plugin</a>&quot;, 
         &quot;<a href="http://jquery.com/">jQuery</a>&quot;, 
         &quot;<a href="http://numeraljs.com/">Numeral.js</a>&quot;
@@ -225,6 +249,7 @@
 <script src="js/hammer.min.js"></script>
 <script src="js/hammer.fakemultitouch.js"></script>
 <script src="js/drum.min.js"></script>
+<script src="js/handsontable.full.min.js"></script>
 <script>
 
 $(function() {
@@ -243,15 +268,21 @@ else {
 }
 
 $.indexedDB("mworecalc", {
-    "version": 1,
+    "version": 2,
     "schema": {
         "1": function(transaction) {
             console.log('MWO ReCalc: schema(1) transaction');
             transaction.createObjectStore("settings");
+        },
+        "2": function(transaction) {
+            console.log('MWO ReCalc: schema(2) transaction');
+            transaction.createObjectStore("settings");
+            transaction.createObjectStore("histories");
         }
     }
 });
 var settings = $.indexedDB("mworecalc").objectStore("settings");
+var histories = $.indexedDB("mworecalc").objectStore("histories");
 
 $('input[name="srcmin"]').TouchSpin({
     min: 0,
@@ -288,7 +319,8 @@ $('input[name="dstwopt"]').TouchSpin({
 });
 
 for (var i = 0; i < 100; ++ i) {
-    var timestr = ('00' + i).slice(-2);
+    var timestr = '00' + i;
+    timestr = timestr.slice(-2);
     var optionelm = $('<option>')
         .val(i)
         .text(timestr)
@@ -352,9 +384,9 @@ $('input[name="dstw"]:radio').change(function() {
 $('input[name="srctime"]:radio').change(function() {
     var srcminsecenabled = ($(this).val() == 'minsec');
     $('select[name="srctimemin"]').prop('disabled', ! srcminsecenabled);
-    $('#srctimemin').drum({ interactive: srcminsecenabled });
+    $('#srctimemin').drum({interactive: srcminsecenabled, });
     $('select[name="srctimesec"]').prop('disabled', ! srcminsecenabled);
-    $('#srctimesec').drum({ interactive: srcminsecenabled });
+    $('#srctimesec').drum({interactive: srcminsecenabled, });
     $('input[name="srcmin"]').prop('disabled', srcminsecenabled);
     $('input[name="srcsec"]').prop('disabled', srcminsecenabled);
     if (srcminsecenabled) $('#srctimemin').focus();
@@ -398,6 +430,50 @@ settings.get('dstwopt')
         console.log('MWO ReCalc: get dstwopt fail (' + error + ')');
     });
 
+var show_history = function(data, options) {
+    if (options === undefined || options !== undefined && ! options['empty']) {
+        var handsontable = $('#history-body').handsontable('getInstance');
+        if (handsontable !== undefined) {
+            handsontable.clear();
+            handsontable.loadData(data);
+            handsontable.deselectCell();
+            handsontable.render();
+            // TODO: ドラッグ拡張行の削除
+        }
+        else {
+            $('#history-body').handsontable({
+                data: data,
+                dataSchema: {srcw: null, srcminsec: null, dstw: null, dstminsec: null, },
+                minCols: 4,
+                colHeaders: ['表記出力[W]', '表記時間[分:秒]', '使用出力[W]', '使用時間[分:秒]', ],
+                colWidths: [100, 120, 100, 120, ],
+                columns: [
+                    {data: 'srcw', readOnly: true, className: 'htRight', },
+                    {data: 'srcminsec', readOnly: true, className: 'htRight', },
+                    {data: 'dstw', readOnly: true, className: 'htRight', },
+                    {data: 'dstminsec', readOnly: true, className: 'htRight', },
+                ],
+                minRows: 0,
+                minSpareRows: 0,
+                rowHeaders: true,
+                autoWrapRow: false,
+                contextMenu: false,
+                pasteMode: 'overwrite',
+                fragmentSelection: true,
+                multiSelect: true,
+                wordWrap: false,
+            });
+        }
+    }
+    else {
+        $('#history-body').empty();
+        $('#history-body').append($('<p>')
+            .text(options.body)
+        );
+    }
+    $('#history-dialog').modal('show');
+};
+
 var show_result = function(text) {
     $('#result-body').empty();
     $('#result-body').append($('<p>')
@@ -405,6 +481,20 @@ var show_result = function(text) {
     );
     $('#result-dialog').modal('show');
 };
+
+$('#history').click(function() {
+    histories.get('recalc')
+        .done(function(result, event) {
+            var result_histories = [];
+            if (result !== undefined) result_histories = result.slice(-10).reverse();
+            console.log('MWO ReCalc: get recalc(history) (' + result + ')');
+            show_history(result_histories, {'empty': (result_histories.length == 0), 'body': '再計算履歴がありません。', });
+        })
+        .fail(function(error, event) {
+            console.log('MWO ReCalc: get recalc(history) fail (' + error + ')');
+            show_history(undefined, {'empty': true, 'body': '再計算履歴がありません。', });
+        });
+});
 
 $('form').submit(function() {
     var srcw = $('input[name="srcw"]:checked').val();
@@ -414,18 +504,19 @@ $('form').submit(function() {
     srcw = parseInt(srcw);
     var dstw = (dstw_raw != '' ? parseInt(dstw_raw) : 0);
     var secfull = 0;
+    var min = 0;
+    var sec = 0;
     if ($('input[name="srctime"]:checked').val() == 'minsec') {
-        var min = parseInt($('select[name="srctimemin"]').val(), 10);
-        var sec = parseInt($('select[name="srctimesec"]').val(), 10);
-        secfull = min * 60 + sec;
+        min = parseInt($('select[name="srctimemin"]').val(), 10);
+        sec = parseInt($('select[name="srctimesec"]').val(), 10);
     }
     else {
-        var min = $('input[name="srcmin"]').val();
-        var sec = $('input[name="srcsec"]').val();
+        min = $('input[name="srcmin"]').val();
+        sec = $('input[name="srcsec"]').val();
         min = (min != '' ? parseFloat(min) : 0);
         sec = (sec != '' ? parseFloat(sec) : 0);
-        secfull = min * 60 + sec;
     }
+    secfull = min * 60 + sec;
     if (dstw == 0) {
         show_result('使用出力 "' + dstw + '" は不正です。');
         return false;
@@ -509,6 +600,57 @@ $('form').submit(function() {
         })
         .done(function(result, event) {
             console.log('MWO ReCalc: dstwopt stored (' + result + ')');
+        });
+
+    var src = {
+        'secfull': secfull,
+        'sec': 0,
+        'min': 0,
+        'minsec': '0:00',
+    };
+    {
+        src.sec = src.secfull % 60;
+        src.min = Math.floor(src.secfull / 60);
+        var secfmt = numeral(src.sec).format('0[.]000');
+        var secpt = secfmt.indexOf('.');
+        if (secpt == 1 || secpt < 0 && secfmt.length == 1) secfmt = '0' + secfmt;
+        src.minsec = src.min + ':' + secfmt;
+    }
+    var history = {
+        'srcw': srcw,
+        'srcminsec': src.minsec,
+        'dstw': dstw,
+        'dstminsec': result.minsec,
+    };
+    histories.get('recalc')
+        .fail(function(error, event) {
+            console.log('MWO ReCalc: get recalc(history) fail (' + error + ')');
+            histories.add([history], 'recalc')
+                .done(function(result, event) {
+                    console.log('MWO ReCalc: recalc(history) stored [new] (' + result + ')');
+                })
+                .fail(function(error, event) {
+                    console.log('MWO ReCalc: recalc(history) stored fail [new] (' + error + ')');
+                });
+        })
+        .done(function(result, event) {
+            console.log('MWO ReCalc: get recalc(history) (' + result + ')');
+            if (result === undefined) result = [];
+            result.push(history);
+            histories.put(result, 'recalc')
+                .fail(function(error, event) {
+                    console.log('MWO ReCalc: recalc(history) stored fail (' + error + ')');
+                    histories.add([history], 'recalc')
+                        .done(function(result, event) {
+                            console.log('MWO ReCalc: recalc(history) stored [new] (' + result + ')');
+                        })
+                        .fail(function(error, event) {
+                            console.log('MWO ReCalc: recalc(history) stored fail [new] (' + error + ')');
+                        });
+                })
+                .done(function(result, event) {
+                    console.log('MWO ReCalc: recalc(history) stored (' + result + ')');
+                });
         });
 
     return false;
